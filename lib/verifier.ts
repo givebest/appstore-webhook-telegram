@@ -6,6 +6,7 @@ import {
 } from "@apple/app-store-server-library";
 import fs from "fs";
 import path from "path";
+import type { AppConfig } from "./apps.js";
 
 function loadRootCAs(): Buffer[] {
   const certsDir = path.join(process.cwd(), "certs");
@@ -15,57 +16,49 @@ function loadRootCAs(): Buffer[] {
   ];
 }
 
-const bundleId = process.env.APPLE_BUNDLE_ID!;
-const appAppleId = process.env.APPLE_APP_APPLE_ID
-  ? parseInt(process.env.APPLE_APP_APPLE_ID, 10)
-  : undefined;
+const rootCAs = loadRootCAs();
 
-let _sandboxVerifier: SignedDataVerifier | null = null;
-let _productionVerifier: SignedDataVerifier | null = null;
-
-function getSandboxVerifier(): SignedDataVerifier {
-  if (!_sandboxVerifier) {
-    _sandboxVerifier = new SignedDataVerifier(
-      loadRootCAs(),
-      true,
-      Environment.SANDBOX,
-      bundleId,
-      undefined
-    );
-  }
-  return _sandboxVerifier;
+function createVerifiers(config: AppConfig): {
+  sandbox: SignedDataVerifier;
+  production: SignedDataVerifier;
+} {
+  return {
+    sandbox: new SignedDataVerifier(rootCAs, true, Environment.SANDBOX, config.bundleId, undefined),
+    production: new SignedDataVerifier(rootCAs, true, Environment.PRODUCTION, config.bundleId, config.appAppleId),
+  };
 }
 
-function getProductionVerifier(): SignedDataVerifier {
-  if (!_productionVerifier) {
-    _productionVerifier = new SignedDataVerifier(
-      loadRootCAs(),
-      true,
-      Environment.PRODUCTION,
-      bundleId,
-      appAppleId
-    );
+const verifierCache = new Map<string, { sandbox: SignedDataVerifier; production: SignedDataVerifier }>();
+
+function getVerifiers(config: AppConfig) {
+  if (!verifierCache.has(config.bundleId)) {
+    verifierCache.set(config.bundleId, createVerifiers(config));
   }
-  return _productionVerifier;
+  return verifierCache.get(config.bundleId)!;
 }
 
 async function getVerifierForPayload(
-  signedPayload: string
+  signedPayload: string,
+  config: AppConfig
 ): Promise<{ verifier: SignedDataVerifier; notification: ResponseBodyV2DecodedPayload }> {
+  const { sandbox, production } = getVerifiers(config);
   try {
-    const notification = await getSandboxVerifier().verifyAndDecodeNotification(signedPayload);
-    return { verifier: getSandboxVerifier(), notification };
+    const notification = await sandbox.verifyAndDecodeNotification(signedPayload);
+    return { verifier: sandbox, notification };
   } catch {
-    const notification = await getProductionVerifier().verifyAndDecodeNotification(signedPayload);
-    return { verifier: getProductionVerifier(), notification };
+    const notification = await production.verifyAndDecodeNotification(signedPayload);
+    return { verifier: production, notification };
   }
 }
 
-export async function verifyAndDecodeNotification(signedPayload: string): Promise<{
+export async function verifyAndDecodeNotification(
+  signedPayload: string,
+  config: AppConfig
+): Promise<{
   notification: ResponseBodyV2DecodedPayload;
   transactionInfo: JWSTransactionDecodedPayload | null;
 }> {
-  const { verifier, notification } = await getVerifierForPayload(signedPayload);
+  const { verifier, notification } = await getVerifierForPayload(signedPayload, config);
 
   let transactionInfo: JWSTransactionDecodedPayload | null = null;
   if (notification.data?.signedTransactionInfo) {

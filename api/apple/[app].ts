@@ -1,12 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { verifyAndDecodeNotification } from "../lib/verifier.js";
-import { sendTelegramNotification } from "../lib/telegram.js";
+import { APPS } from "../../lib/apps.js";
+import { verifyAndDecodeNotification } from "../../lib/verifier.js";
+import { sendTelegramNotification } from "../../lib/telegram.js";
 
 function stringifyForLog(value: unknown): string {
-  if (typeof value === "string") {
-    return value;
-  }
-
+  if (typeof value === "string") return value;
   try {
     return JSON.stringify(value, null, 2);
   } catch {
@@ -15,15 +13,17 @@ function stringifyForLog(value: unknown): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const appSlug = req.query.app as string;
+  const appConfig = APPS[appSlug];
+
+  if (!appConfig) {
+    console.error(`[apple] unknown app slug: ${appSlug}`);
+    return res.status(404).json({ error: "Unknown app" });
+  }
+
   console.log(
-    "[apple] incoming request:",
-    stringifyForLog({
-      method: req.method,
-      url: req.url,
-      headers: req.headers,
-      query: req.query,
-      body: req.body,
-    })
+    `[apple:${appSlug}] incoming request:`,
+    stringifyForLog({ method: req.method, url: req.url, body: req.body }),
   );
 
   if (req.method !== "POST") {
@@ -33,16 +33,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { signedPayload } = req.body ?? {};
 
   if (!signedPayload || typeof signedPayload !== "string") {
-    console.error("[apple] missing or invalid signedPayload");
+    console.error(`[apple:${appSlug}] missing or invalid signedPayload`);
     return res.status(200).json({ ok: false });
   }
 
+  console.log("appConfig", appConfig);
+
   let result: Awaited<ReturnType<typeof verifyAndDecodeNotification>>;
   try {
-    result = await verifyAndDecodeNotification(signedPayload);
+    result = await verifyAndDecodeNotification(signedPayload, appConfig);
   } catch (err) {
-    console.error("[apple] JWS verification failed:", err);
-    // Always return 200 to prevent Apple from retrying
+    console.error(`[apple:${appSlug}] JWS verification failed:`, err);
     return res.status(200).json({ ok: false });
   }
 
@@ -50,9 +51,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { notificationType, subtype, data } = notification;
   const environment = data?.environment ?? "Unknown";
 
-  console.log("[apple] decoded notification:", stringifyForLog(notification));
-  console.log("[apple] decoded transactionInfo:", stringifyForLog(transactionInfo));
-  console.log("[apple] notification:", notificationType, subtype, environment);
+  console.log(
+    `[apple:${appSlug}] notification:`,
+    notificationType,
+    subtype,
+    environment,
+  );
 
   try {
     await sendTelegramNotification({
@@ -65,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       transactionId: transactionInfo?.transactionId ?? null,
     });
   } catch (err) {
-    console.error("[telegram] notification failed:", err);
+    console.error(`[telegram:${appSlug}] notification failed:`, err);
   }
 
   return res.status(200).json({ ok: true });

@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/apple.ts": {
+    "api/apple/[app].ts": {
       "maxDuration": 10
     }
   }

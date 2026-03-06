@@ -9,12 +9,12 @@ cp .env.example .env.local
 # 编辑 .env.local 填入真实值
 ```
 
-| 变量 | 说明 |
-|------|------|
-| `APPLE_BUNDLE_ID` | App 的 Bundle ID |
+| 变量                 | 说明                                             |
+| -------------------- | ------------------------------------------------ |
+| `APPLE_BUNDLE_ID`    | App 的 Bundle ID                                 |
 | `APPLE_APP_APPLE_ID` | App Store Connect 数字 App ID（Production 必填） |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（via @BotFather） |
-| `TELEGRAM_CHAT_ID` | 接收通知的 Chat ID |
+| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（via @BotFather）             |
+| `TELEGRAM_CHAT_ID`   | 接收通知的 Chat ID                               |
 
 ## 本地开发
 
@@ -42,5 +42,5 @@ vercel deploy
 ## Webhook 端点
 
 ```
-POST /api/apple
+POST /api/apple/app_name
 ```
