@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# App Store Webhook
 
-## Getting Started
+接收 App Store Server Notifications v2，验证 JWS 签名，推送 Telegram 通知。
 
-First, run the development server:
+## 配置
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
+# 编辑 .env.local 填入真实值
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| 变量 | 说明 |
+|------|------|
+| `APPLE_BUNDLE_ID` | App 的 Bundle ID |
+| `APPLE_APP_APPLE_ID` | App Store Connect 数字 App ID（Production 必填） |
+| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（via @BotFather） |
+| `TELEGRAM_CHAT_ID` | 接收通知的 Chat ID |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 本地开发
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm local
+# 监听 http://localhost:3003
+```
 
-## Learn More
+用 ngrok 暴露本地端口：
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+ngrok http 3003
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+将 ngrok URL 填入 App Store Connect → App Information → App Store Server Notifications → Sandbox Server URL，点击 **Send Test Notification**。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 部署
 
-## Deploy on Vercel
+```bash
+vercel deploy
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+在 Vercel Dashboard 配置环境变量，然后将生产 URL 填入 App Store Connect Production Server URL。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Webhook 端点
+
+```
+POST /api/apple
+```

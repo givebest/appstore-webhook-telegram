@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/apple.ts": {
+      "maxDuration": 10
+    }
+  }
+}
