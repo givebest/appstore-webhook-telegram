@@ -103,6 +103,64 @@ Then go to **Vercel Dashboard → Your Project → Settings → Environment Vari
 
 Paste the production Vercel URL into App Store Connect → Production Server URL.
 
+## Testing with a Sandbox Account
+
+### 1. Create a Sandbox Tester Account
+
+1. Go to [App Store Connect](https://appstoreconnect.apple.com) → **Users and Access** → **Sandbox Testers**
+2. Click **+** to create a new tester
+3. Fill in the details — use a real email address you control (it will receive a verification email)
+4. Choose a country/region that matches the currency you want to test
+5. Click **Invite** and verify the email address
+
+> Each sandbox account can only be used on one device at a time. Create multiple accounts if you need to test on multiple devices.
+
+### 2. Sign In on iPhone
+
+1. On your iPhone, go to **Settings → Developer → Sandbox Apple Account**
+2. Sign in with your sandbox tester account
+
+> No need to sign out of your real Apple ID. The sandbox account is managed separately under Developer settings.
+
+### 3. Configure Sandbox Server URL
+
+Make sure your webhook Sandbox URL is set in App Store Connect:
+
+**App Store Connect → Your App → App Information → App Store Server Notifications → Sandbox Server URL**
+
+Set it to your ngrok URL (local dev) or your Vercel URL.
+
+### 4. Trigger a Test Purchase
+
+1. Open your app on the iPhone
+2. Tap any in-app purchase or subscription button
+3. A sign-in prompt will appear — sign in with your **sandbox tester account** (not your real Apple ID)
+4. Confirm the purchase (no real money is charged)
+5. Watch your Telegram chat for the notification
+
+### 5. Sandbox Subscription Renewal Rates
+
+Sandbox subscriptions renew much faster than production:
+
+| Production duration | Sandbox renewal interval |
+| ------------------- | ------------------------ |
+| 1 week              | 3 minutes                |
+| 1 month             | 5 minutes                |
+| 2 months            | 10 minutes               |
+| 3 months            | 15 minutes               |
+| 6 months            | 30 minutes               |
+| 1 year              | 1 hour                   |
+
+Each subscription auto-renews up to 12 times in sandbox, then expires — you'll receive `DID_RENEW` and eventually `EXPIRED` notifications.
+
+### 6. Manage Sandbox Subscriptions on Device
+
+To cancel, refund, or change a sandbox subscription:
+
+**iPhone → Settings → Developer → Sandbox Apple Account**
+
+From here you can sign in with your sandbox tester and manage active subscriptions directly.
+
 ## Adding a New App
 
 Add a line to your `.env.local` (no code changes needed):
