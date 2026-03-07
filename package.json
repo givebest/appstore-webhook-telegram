@@ -1,0 +1,26 @@
+{
+  "name": "app-store-webhook",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "local": "vercel dev --listen 3003",
+    "typecheck": "tsc --noEmit",
+    "deploy": "vercel deploy"
+  },
+  "dependencies": {
+    "@apple/app-store-server-library": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@vercel/node": "^5.6.11",
+    "typescript": "^5",
+    "vercel": "^50.28.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "author": "Givebest <givenlovs@msn.com>",
+  "license": "MIT"
+}
