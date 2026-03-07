@@ -49,12 +49,17 @@ Edit `.env.local`:
 ```env
 TELEGRAM_BOT_TOKEN=123456789:ABCDefghIJKlmnopQRStuvWXyz
 TELEGRAM_CHAT_ID=-1001234567890
+
+# One line per app: APP_<SLUG>=<bundleId>:<appAppleId>
+APP_IMAGE2PDF=com.yourcompany.image2pdf:1234567890
+APP_MYAPP=com.yourcompany.myapp:9876543210
 ```
 
 | Variable             | Description                                                    |
 | -------------------- | -------------------------------------------------------------- |
 | `TELEGRAM_BOT_TOKEN` | Token from @BotFather                                          |
 | `TELEGRAM_CHAT_ID`   | Your personal ID (positive number) or group/channel (negative) |
+| `APP_<SLUG>`         | `<bundleId>:<appAppleId>` — slug becomes the URL path          |
 
 ### 4. Register Webhook URLs in App Store Connect
 
@@ -91,7 +96,7 @@ Paste the ngrok HTTPS URL into App Store Connect → Sandbox Server URL, then cl
 ## Deploy to Vercel
 
 ```bash
-vercel deploy
+pnpm publish
 ```
 
 Then go to **Vercel Dashboard → Your Project → Settings → Environment Variables** and add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`.
@@ -100,16 +105,15 @@ Paste the production Vercel URL into App Store Connect → Production Server URL
 
 ## Adding a New App
 
-Edit [lib/apps.ts](lib/apps.ts) and add an entry:
+Add a line to your `.env.local` (no code changes needed):
 
-```ts
-myapp: {
-  bundleId: "com.yourcompany.myapp",
-  appAppleId: 1234567890,
-},
+```env
+APP_MYAPP=com.yourcompany.myapp:1234567890
 ```
 
-The key (`myapp`) becomes the URL slug: `POST /api/apple/myapp`.
+The variable suffix (`MYAPP` → `myapp`) becomes the URL slug: `POST /api/apple/myapp`.
+
+Then add the Vercel environment variable in the dashboard and redeploy.
 
 ## Webhook Endpoint
 
