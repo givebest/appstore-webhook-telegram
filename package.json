@@ -5,7 +5,7 @@
   "scripts": {
     "local": "vercel dev --listen 3003",
     "typecheck": "tsc --noEmit",
-    "publish": "vercel deploy"
+    "deploy": "vercel deploy"
   },
   "dependencies": {
     "@apple/app-store-server-library": "^2.0.0"

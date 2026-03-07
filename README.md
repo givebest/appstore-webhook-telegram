@@ -96,7 +96,7 @@ Paste the ngrok HTTPS URL into App Store Connect → Sandbox Server URL, then cl
 ## Deploy to Vercel
 
 ```bash
-pnpm publish
+pnpm run deploy
 ```
 
 Then go to **Vercel Dashboard → Your Project → Settings → Environment Variables** and add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`.
