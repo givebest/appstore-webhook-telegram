@@ -60,6 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     await sendTelegramNotification({
+      appSlug,
       notificationType: notificationType ?? "UNKNOWN",
       subtype: subtype ?? null,
       productId: transactionInfo?.productId ?? null,
