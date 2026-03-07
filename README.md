@@ -8,6 +8,8 @@ Receives [App Store Server Notifications v2](https://developer.apple.com/documen
 2. The server verifies the JWS signature using Apple's root certificates
 3. A formatted message is sent to your Telegram chat
 
+![Screenshot](./screenshot/iOS.webp)
+
 ## Setup
 
 ### 1. Create a Telegram Bot
@@ -180,6 +182,10 @@ POST /api/apple/:app
 ```
 
 Always returns `200 OK` to Apple (even on verification failure) to prevent retries.
+
+## Sponsored By
+
+This project is built and maintained to support [Image2WebP](https://apps.apple.com/app/id6670599252) — convert images to WebP/AVIF format quickly and securely, reducing file size by up to 80%.
 
 ## License
 
