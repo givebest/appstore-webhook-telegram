@@ -122,3 +122,7 @@ POST /api/apple/:app
 ```
 
 Always returns `200 OK` to Apple (even on verification failure) to prevent retries.
+
+## License
+
+MIT © 2026 givebest
