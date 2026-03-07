@@ -1,44 +1,120 @@
 # App Store Webhook
 
-Receives App Store Server Notifications v2, verifies JWS signatures, and sends Telegram notifications.
+Receives [App Store Server Notifications v2](https://developer.apple.com/documentation/appstoreservernotifications), verifies JWS signatures using Apple's official library, and forwards events to a Telegram chat.
+
+## How It Works
+
+1. Apple sends a signed POST request to your webhook endpoint after each subscription event
+2. The server verifies the JWS signature using Apple's root certificates
+3. A formatted message is sent to your Telegram chat
 
 ## Setup
 
+### 1. Create a Telegram Bot
+
+1. Open Telegram and search for **@BotFather**
+2. Send `/newbot` and follow the prompts (choose a name and username)
+3. BotFather will reply with your **Bot Token** — looks like `123456789:ABCDefghIJKlmnopQRStuvWXyz`
+4. Copy it — this is your `TELEGRAM_BOT_TOKEN`
+
+### 2. Get Your Chat ID
+
+**For a personal chat:**
+
+1. Search for **@userinfobot** on Telegram
+2. Send it any message
+3. Open this URL in your browser (replace `<TOKEN>` with your bot token):
+   ```
+   https://api.telegram.org/bot<TOKEN>/getUpdates
+   ```
+4. Find `"chat":{"id":...}` in the response — the negative number (e.g. `-1001234567890`) is your `TELEGRAM_CHAT_ID`
+
+**For a group or channel:**
+
+1. Add your bot to the group/channel and grant it permission to post messages
+2. Send a message in the group, then open this URL in your browser (replace `<TOKEN>` with your bot token):
+   ```
+   https://api.telegram.org/bot<TOKEN>/getUpdates
+   ```
+3. Find `"chat":{"id":...}` in the response — the negative number (e.g. `-1001234567890`) is your `TELEGRAM_CHAT_ID`
+
+### 3. Configure Environment Variables
+
 ```bash
 cp .env.example .env.local
-# Fill in the values
 ```
 
-| Variable             | Description                          |
-| -------------------- | ------------------------------------ |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token (via @BotFather)  |
-| `TELEGRAM_CHAT_ID`   | Chat ID to receive notifications     |
+Edit `.env.local`:
+
+```env
+TELEGRAM_BOT_TOKEN=123456789:ABCDefghIJKlmnopQRStuvWXyz
+TELEGRAM_CHAT_ID=-1001234567890
+```
+
+| Variable             | Description                                                    |
+| -------------------- | -------------------------------------------------------------- |
+| `TELEGRAM_BOT_TOKEN` | Token from @BotFather                                          |
+| `TELEGRAM_CHAT_ID`   | Your personal ID (positive number) or group/channel (negative) |
+
+### 4. Register Webhook URLs in App Store Connect
+
+Go to **App Store Connect → Your App → App Information → App Store Server Notifications**:
+
+- **Sandbox URL** — your ngrok/tunnel URL (for testing)
+- **Production URL** — your deployed Vercel URL
+
+Both should point to `POST /api/apple/<app-slug>`, e.g. `/api/apple/image2pdf`.
 
 ## Local Development
+
+Install dependencies:
+
+```bash
+pnpm install
+```
+
+Start the local server:
 
 ```bash
 pnpm local
 # Listening on http://localhost:3003
 ```
 
-Expose local port with ngrok:
+Expose it to the internet with ngrok:
 
 ```bash
 ngrok http 3003
 ```
 
-Paste the ngrok URL into App Store Connect → App Information → App Store Server Notifications → Sandbox Server URL, then click **Send Test Notification**.
+Paste the ngrok HTTPS URL into App Store Connect → Sandbox Server URL, then click **Send Test Notification**. You should receive a Telegram message within seconds.
 
-## Deploy
+## Deploy to Vercel
 
 ```bash
 vercel deploy
 ```
 
-Set environment variables in the Vercel Dashboard, then paste the production URL into App Store Connect Production Server URL.
+Then go to **Vercel Dashboard → Your Project → Settings → Environment Variables** and add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`.
+
+Paste the production Vercel URL into App Store Connect → Production Server URL.
+
+## Adding a New App
+
+Edit [lib/apps.ts](lib/apps.ts) and add an entry:
+
+```ts
+myapp: {
+  bundleId: "com.yourcompany.myapp",
+  appAppleId: 1234567890,
+},
+```
+
+The key (`myapp`) becomes the URL slug: `POST /api/apple/myapp`.
 
 ## Webhook Endpoint
 
 ```
-POST /api/apple/app_name
+POST /api/apple/:app
 ```
+
+Always returns `200 OK` to Apple (even on verification failure) to prevent retries.
