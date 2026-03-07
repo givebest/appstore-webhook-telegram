@@ -3,26 +3,22 @@ export interface AppConfig {
   appAppleId: number | undefined;
 }
 
-function appleId(val: string | undefined): number | undefined {
-  return val ? parseInt(val, 10) : undefined;
-}
-
 // Key is the URL slug, e.g. /api/apple/image2pdf
 export const APPS: Record<string, AppConfig> = {
   image2pdf: {
-    bundleId: process.env.IMAGE2PDF_BUNDLE_ID!,
-    appAppleId: appleId(process.env.IMAGE2PDF_APPLE_ID),
+    bundleId: "com.givebest.Image2PDF",
+    appAppleId: 6741581868,
   },
   image2webp: {
-    bundleId: process.env.IMAGE2WEBP_BUNDLE_ID!,
-    appAppleId: appleId(process.env.IMAGE2WEBP_APPLE_ID),
+    bundleId: "com.givebest.Image2WebP",
+    appAppleId: 6670599252,
   },
   video2mp3: {
-    bundleId: process.env.VIDEO2MP3_BUNDLE_ID!,
-    appAppleId: appleId(process.env.VIDEO2MP3_APPLE_ID),
+    bundleId: "com.givebest.Video2MP3",
+    appAppleId: 6737749090,
   },
   upnio: {
-    bundleId: process.env.UPNIO_BUNDLE_ID!,
-    appAppleId: appleId(process.env.UPNIO_APPLE_ID),
+    bundleId: "com.givebest.Upnio",
+    appAppleId: 6752530162,
   },
 };
