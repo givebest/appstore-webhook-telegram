@@ -107,9 +107,10 @@ export async function sendTelegramNotification(
 
   lines.push(
     `${emoji} *${typeDisplay}*${envBadge}`,
-    `金额: ${formatPrice(data.priceMills, data.currency)}  ${data?.appSlug ? `(${data.appSlug})` : ""}`,
-    `产品: \`${data.productId ?? "—"}\``,
+    `金额: ${formatPrice(data.priceMills, data.currency)}`,
+    `APP: \`${data?.appSlug ?? "—"}\``,
     `时间: ${formatDate(Date.now())}`,
+    `产品: \`${data.productId ?? "—"}\``,
   );
 
   if (data.transactionId) {
