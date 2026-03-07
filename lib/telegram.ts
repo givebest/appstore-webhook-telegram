@@ -40,7 +40,7 @@ const SUBTYPE_LABELS: Record<string, string> = {
 };
 
 export interface NotificationData {
-  // slug from the request URL ("image2pdf" etc.) so callers can label the
+  // slug from the request URL ("image2webp" etc.) so callers can label the
   // message, or leave undefined if the caller doesn't know it.
   appSlug?: string;
 

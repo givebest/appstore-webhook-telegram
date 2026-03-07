@@ -51,7 +51,7 @@ TELEGRAM_BOT_TOKEN=123456789:ABCDefghIJKlmnopQRStuvWXyz
 TELEGRAM_CHAT_ID=-1001234567890
 
 # One line per app: APP_<SLUG>=<bundleId>:<appAppleId>
-APP_IMAGE2PDF=com.yourcompany.image2pdf:1234567890
+APP_IMAGE2WEBP=com.yourcompany.image2webp:1234567890
 APP_MYAPP=com.yourcompany.myapp:9876543210
 ```
 
@@ -68,7 +68,7 @@ Go to **App Store Connect → Your App → App Information → App Store Server 
 - **Sandbox URL** — your ngrok/tunnel URL (for testing)
 - **Production URL** — your deployed Vercel URL
 
-Both should point to `POST /api/apple/<app-slug>`, e.g. `/api/apple/image2pdf`.
+Both should point to `POST /api/apple/<app-slug>`, e.g. `/api/apple/image2webp`.
 
 ## Local Development
 
@@ -91,7 +91,7 @@ Expose it to the internet with ngrok:
 ngrok http 3003
 ```
 
-Paste the ngrok HTTPS URL into App Store Connect → Sandbox Server URL, then click **Send Test Notification**. You should receive a Telegram message within seconds.
+Paste the ngrok HTTPS URL into App Store Connect → Sandbox Server URL.
 
 ## Deploy to Vercel
 
