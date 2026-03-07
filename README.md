@@ -1,43 +1,43 @@
 # App Store Webhook
 
-接收 App Store Server Notifications v2，验证 JWS 签名，推送 Telegram 通知。
+Receives App Store Server Notifications v2, verifies JWS signatures, and sends Telegram notifications.
 
-## 配置
+## Setup
 
 ```bash
 cp .env.example .env.local
-# 编辑 .env.local 填入真实值
+# Fill in the values
 ```
 
-| 变量                 | 说明                                 |
+| Variable             | Description                          |
 | -------------------- | ------------------------------------ |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（via @BotFather） |
-| `TELEGRAM_CHAT_ID`   | 接收通知的 Chat ID                   |
+| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token (via @BotFather)  |
+| `TELEGRAM_CHAT_ID`   | Chat ID to receive notifications     |
 
-## 本地开发
+## Local Development
 
 ```bash
 pnpm local
-# 监听 http://localhost:3003
+# Listening on http://localhost:3003
 ```
 
-用 ngrok 暴露本地端口：
+Expose local port with ngrok:
 
 ```bash
 ngrok http 3003
 ```
 
-将 ngrok URL 填入 App Store Connect → App Information → App Store Server Notifications → Sandbox Server URL，点击 **Send Test Notification**。
+Paste the ngrok URL into App Store Connect → App Information → App Store Server Notifications → Sandbox Server URL, then click **Send Test Notification**.
 
-## 部署
+## Deploy
 
 ```bash
 vercel deploy
 ```
 
-在 Vercel Dashboard 配置环境变量，然后将生产 URL 填入 App Store Connect Production Server URL。
+Set environment variables in the Vercel Dashboard, then paste the production URL into App Store Connect Production Server URL.
 
-## Webhook 端点
+## Webhook Endpoint
 
 ```
 POST /api/apple/app_name

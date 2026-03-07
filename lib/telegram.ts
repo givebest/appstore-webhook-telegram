@@ -6,37 +6,37 @@
 
 // Maps notificationType to [emoji, label]
 const TYPE_INFO: Record<string, [string, string]> = {
-  SUBSCRIBED: ["💰", "新订阅"],
-  DID_RENEW: ["🔄", "续订成功"],
-  DID_FAIL_TO_RENEW: ["⚠️", "续订失败"],
-  DID_CHANGE_RENEWAL_STATUS: ["🔔", "续订状态变更"],
-  DID_CHANGE_RENEWAL_PREF: ["🔀", "续订计划变更"],
-  EXPIRED: ["💤", "订阅到期"],
-  REFUND: ["↩️", "退款"],
-  REFUND_DECLINED: ["🚫", "退款被拒"],
-  CONSUMPTION_REQUEST: ["❓", "消耗品退款请求"],
-  PRICE_INCREASE: ["📈", "价格上涨"],
-  REVOKE: ["👨‍👩‍👧", "家庭共享撤销"],
-  ONE_TIME_CHARGE: ["🛒", "一次性购买"],
-  RENEWAL_EXTENSION: ["📅", "续订延期"],
-  RENEWAL_EXTENDED: ["✅", "续订已延期"],
-  TEST: ["🧪", "测试通知"],
+  SUBSCRIBED: ["💰", "New Subscription"],
+  DID_RENEW: ["🔄", "Renewed"],
+  DID_FAIL_TO_RENEW: ["⚠️", "Renewal Failed"],
+  DID_CHANGE_RENEWAL_STATUS: ["🔔", "Renewal Status Changed"],
+  DID_CHANGE_RENEWAL_PREF: ["🔀", "Renewal Plan Changed"],
+  EXPIRED: ["💤", "Expired"],
+  REFUND: ["↩️", "Refund"],
+  REFUND_DECLINED: ["🚫", "Refund Declined"],
+  CONSUMPTION_REQUEST: ["❓", "Consumable Refund Request"],
+  PRICE_INCREASE: ["📈", "Price Increase"],
+  REVOKE: ["👨‍👩‍👧", "Family Sharing Revoked"],
+  ONE_TIME_CHARGE: ["🛒", "One-Time Purchase"],
+  RENEWAL_EXTENSION: ["📅", "Renewal Extension"],
+  RENEWAL_EXTENDED: ["✅", "Renewal Extended"],
+  TEST: ["🧪", "Test Notification"],
 };
 
 const SUBTYPE_LABELS: Record<string, string> = {
-  INITIAL_BUY: "首次购买",
-  RESUBSCRIBE: "重新订阅",
-  BILLING_RECOVERY: "账单恢复",
-  GRACE_PERIOD: "宽限期",
-  AUTO_RENEW_ENABLED: "已开启自动续订",
-  AUTO_RENEW_DISABLED: "已关闭自动续订",
-  UPGRADE: "升级",
-  DOWNGRADE: "降级",
-  VOLUNTARY: "主动取消",
-  BILLING_RETRY: "账单重试失败",
-  PRICE_INCREASE: "价格上涨未同意",
-  SUMMARY: "汇总",
-  FAILURE: "失败",
+  INITIAL_BUY: "Initial Purchase",
+  RESUBSCRIBE: "Resubscribe",
+  BILLING_RECOVERY: "Billing Recovery",
+  GRACE_PERIOD: "Grace Period",
+  AUTO_RENEW_ENABLED: "Auto-Renew Enabled",
+  AUTO_RENEW_DISABLED: "Auto-Renew Disabled",
+  UPGRADE: "Upgrade",
+  DOWNGRADE: "Downgrade",
+  VOLUNTARY: "Voluntary Cancel",
+  BILLING_RETRY: "Billing Retry Failed",
+  PRICE_INCREASE: "Price Increase Not Agreed",
+  SUMMARY: "Summary",
+  FAILURE: "Failure",
 };
 
 export interface NotificationData {
@@ -57,7 +57,7 @@ function formatPrice(
   priceMills: number | null | undefined,
   currency: string | null | undefined,
 ): string {
-  if (priceMills == null || !currency) return "未知";
+  if (priceMills == null || !currency) return "Unknown";
   const amount = (priceMills / 1000).toFixed(2);
   return `${amount} ${currency}`;
 }
@@ -107,14 +107,14 @@ export async function sendTelegramNotification(
 
   lines.push(
     `${emoji} *${typeDisplay}*${envBadge}`,
-    `金额: ${formatPrice(data.priceMills, data.currency)}`,
-    `APP: \`${data?.appSlug ?? "—"}\``,
-    `时间: ${formatDate(Date.now())}`,
-    `产品: \`${data.productId ?? "—"}\``,
+    `Amount: ${formatPrice(data.priceMills, data.currency)}`,
+    `App: \`${data?.appSlug ?? "—"}\``,
+    `Time: ${formatDate(Date.now())}`,
+    `Product: \`${data.productId ?? "—"}\``,
   );
 
   if (data.transactionId) {
-    lines.push(`交易: \`${data.transactionId}\``);
+    lines.push(`Transaction: \`${data.transactionId}\``);
   }
 
   const text = lines.join("\n");
