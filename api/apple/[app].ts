@@ -68,6 +68,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       currency: transactionInfo?.currency ?? null,
       environment: String(environment),
       transactionId: transactionInfo?.transactionId ?? null,
+      storefront: transactionInfo?.storefront ?? null,
+      eventDate: notification.signedDate ?? null,
+      purchaseDate: transactionInfo?.purchaseDate ?? null,
+      offerType: transactionInfo?.offerType != null ? Number(transactionInfo.offerType) : null,
+      offerIdentifier: transactionInfo?.offerIdentifier ?? null,
+      transactionReason: transactionInfo?.transactionReason != null ? String(transactionInfo.transactionReason) : null,
+      inAppOwnershipType: transactionInfo?.inAppOwnershipType != null ? String(transactionInfo.inAppOwnershipType) : null,
     });
   } catch (err) {
     console.error(`[telegram:${appSlug}] notification failed:`, err);

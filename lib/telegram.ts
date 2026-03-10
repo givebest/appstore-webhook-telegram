@@ -51,6 +51,13 @@ export interface NotificationData {
   currency?: string | null;
   environment: string;
   transactionId?: string | null;
+  storefront?: string | null;
+  eventDate?: number | null;
+  purchaseDate?: number | null;
+  offerType?: number | null;
+  offerIdentifier?: string | null;
+  transactionReason?: string | null;
+  inAppOwnershipType?: string | null;
 }
 
 function formatPrice(
@@ -105,14 +112,38 @@ export async function sendTelegramNotification(
   //   lines.push(`🆔 应用  (${formattedAppSlug(data.appSlug)})`);
   // }
 
+  const OFFER_TYPE_LABELS: Record<number, string> = {
+    1: "Introductory Offer",
+    2: "Promotional Offer",
+    3: "Offer Code",
+    4: "Win-Back Offer",
+  };
+
   lines.push(
     `${emoji} *${typeDisplay}*${envBadge}`,
     `Amount: ${formatPrice(data.priceMills, data.currency)}`,
     `App: \`${data?.appSlug ?? "—"}\``,
-    `Time: ${formatDate(Date.now())}`,
+    `Time: ${data.eventDate ? formatDate(data.eventDate) : formatDate(Date.now())}`,
     `Product: \`${data.productId ?? "—"}\``,
   );
 
+  if (data.storefront) {
+    lines.push(`Storefront: \`${data.storefront}\``);
+  }
+  if (data.transactionReason) {
+    lines.push(`Reason: \`${data.transactionReason}\``);
+  }
+  if (data.inAppOwnershipType) {
+    lines.push(`Ownership: \`${data.inAppOwnershipType}\``);
+  }
+  if (data.offerType != null) {
+    const offerLabel = OFFER_TYPE_LABELS[data.offerType] ?? `Type ${data.offerType}`;
+    const offerSuffix = data.offerIdentifier ? ` (${data.offerIdentifier})` : "";
+    lines.push(`Offer: \`${offerLabel}${offerSuffix}\``);
+  }
+  if (data.purchaseDate) {
+    lines.push(`Purchased: ${formatDate(data.purchaseDate)}`);
+  }
   if (data.transactionId) {
     lines.push(`Transaction: \`${data.transactionId}\``);
   }
