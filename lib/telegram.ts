@@ -39,6 +39,62 @@ const SUBTYPE_LABELS: Record<string, string> = {
   FAILURE: "Failure",
 };
 
+// ISO 3166-1 alpha-3 country code to flag emoji mapping
+const STOREFRONT_FLAGS: Record<string, string> = {
+  USA: "🇺🇸",
+  CHN: "🇨🇳",
+  GBR: "🇬🇧",
+  JPN: "🇯🇵",
+  KOR: "🇰🇷",
+  DEU: "🇩🇪",
+  FRA: "🇫🇷",
+  ITA: "🇮🇹",
+  ESP: "🇪🇸",
+  CAN: "🇨🇦",
+  AUS: "🇦🇺",
+  IND: "🇮🇳",
+  BRA: "🇧🇷",
+  MEX: "🇲🇽",
+  RUS: "🇷🇺",
+  TWN: "🇹🇼",
+  HKG: "🇭🇰",
+  SRB: "🇷🇸",
+  NLD: "🇳🇱",
+  SWE: "🇸🇪",
+  NOR: "🇳🇴",
+  DNK: "🇩🇰",
+  FIN: "🇫🇮",
+  POL: "🇵🇱",
+  TUR: "🇹🇷",
+  IDN: "🇮🇩",
+  THA: "🇹🇭",
+  VNM: "🇻🇳",
+  MYS: "🇲🇾",
+  PHL: "🇵🇭",
+  ARE: "🇦🇪",
+  SAU: "🇸🇦",
+  ISR: "🇮🇱",
+  EGY: "🇪🇬",
+  ZAF: "🇿🇦",
+  NGA: "🇳🇬",
+  KEN: "🇰🇪",
+  ARG: "🇦🇷",
+  CHL: "🇨🇱",
+  COL: "🇨🇴",
+  PER: "🇵🇪",
+  UKR: "🇺🇦",
+  ROU: "🇷🇴",
+  CHE: "🇨🇭",
+  AUT: "🇦🇹",
+  BEL: "🇧🇪",
+  PRT: "🇵🇹",
+  GRC: "🇬🇷",
+  CZE: "🇨🇿",
+  HUN: "🇭🇺",
+  NZL: "🇳🇿",
+  SGP: "🇸🇬",
+};
+
 export interface NotificationData {
   // slug from the request URL ("image2webp" etc.) so callers can label the
   // message, or leave undefined if the caller doesn't know it.
@@ -64,6 +120,7 @@ function formatPrice(
   priceMills: number | null | undefined,
   currency: string | null | undefined,
   inAppOwnershipType?: string | null,
+  storefront?: string | null,
 ): string {
   if (priceMills == null || !currency) return "Unknown";
   // Family sharing transactions show as 0.00 for the recipient
@@ -71,11 +128,16 @@ function formatPrice(
     return "Family Shared";
   }
   const amount = (priceMills / 1000).toFixed(2);
-  return `${amount} ${currency}`;
+  const flag = storefront ? getStorefrontFlag(storefront) : "";
+  return `${amount} ${currency} ${flag}`.trim();
 }
 
 function formatDate(ts: number): string {
   return new Date(ts).toISOString().replace("T", " ").slice(0, 19) + " UTC";
+}
+
+function getStorefrontFlag(storefront: string): string {
+  return STOREFRONT_FLAGS[storefront] ?? "";
 }
 
 export async function sendTelegramNotification(
@@ -126,14 +188,15 @@ export async function sendTelegramNotification(
 
   lines.push(
     `${emoji} *${typeDisplay}*${envBadge}`,
-    `Amount: ${formatPrice(data.priceMills, data.currency, data.inAppOwnershipType)}`,
+    `Amount: ${formatPrice(data.priceMills, data.currency, data.inAppOwnershipType, data.storefront)}`,
     `App: \`${data?.appSlug ?? "—"}\``,
     `Time: ${data.eventDate ? formatDate(data.eventDate) : formatDate(Date.now())}`,
     `Product: \`${data.productId ?? "—"}\``,
   );
 
   if (data.storefront) {
-    lines.push(`Storefront: \`${data.storefront}\``);
+    const flag = getStorefrontFlag(data.storefront);
+    lines.push(`Storefront: ${flag} \`${data.storefront}\``);
   }
   if (data.transactionReason) {
     lines.push(`Reason: \`${data.transactionReason}\``);
