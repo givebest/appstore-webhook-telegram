@@ -63,8 +63,13 @@ export interface NotificationData {
 function formatPrice(
   priceMills: number | null | undefined,
   currency: string | null | undefined,
+  inAppOwnershipType?: string | null,
 ): string {
   if (priceMills == null || !currency) return "Unknown";
+  // Family sharing transactions show as 0.00 for the recipient
+  if (priceMills === 0 && inAppOwnershipType === "FAMILY_SHARED") {
+    return "Family Shared";
+  }
   const amount = (priceMills / 1000).toFixed(2);
   return `${amount} ${currency}`;
 }
@@ -121,7 +126,7 @@ export async function sendTelegramNotification(
 
   lines.push(
     `${emoji} *${typeDisplay}*${envBadge}`,
-    `Amount: ${formatPrice(data.priceMills, data.currency)}`,
+    `Amount: ${formatPrice(data.priceMills, data.currency, data.inAppOwnershipType)}`,
     `App: \`${data?.appSlug ?? "—"}\``,
     `Time: ${data.eventDate ? formatDate(data.eventDate) : formatDate(Date.now())}`,
     `Product: \`${data.productId ?? "—"}\``,
