@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { APPS } from "../../lib/apps.js";
 import { verifyAndDecodeNotification } from "../../lib/verifier.js";
-import { sendTelegramNotification } from "../../lib/telegram.js";
+import { sendNotification } from "../../lib/notify.js";
 
 function stringifyForLog(value: unknown): string {
   if (typeof value === "string") return value;
@@ -59,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   );
 
   try {
-    await sendTelegramNotification({
+    await sendNotification({
       appSlug,
       notificationType: notificationType ?? "UNKNOWN",
       subtype: subtype ?? null,
@@ -77,7 +77,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       inAppOwnershipType: transactionInfo?.inAppOwnershipType != null ? String(transactionInfo.inAppOwnershipType) : null,
     });
   } catch (err) {
-    console.error(`[telegram:${appSlug}] notification failed:`, err);
+    console.error(`[notify:${appSlug}] notification failed:`, err);
   }
 
   return res.status(200).json({ ok: true });
