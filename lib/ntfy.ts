@@ -57,18 +57,32 @@ function formatDate(ts: number): string {
   return new Date(ts).toISOString().replace("T", " ").slice(0, 19) + " UTC";
 }
 
-export async function sendNtfyNotification(data: NotificationData): Promise<void> {
+export async function sendNtfyNotification(
+  data: NotificationData,
+): Promise<void> {
   const ntfyUrl = process.env.NTFY_URL;
   if (!ntfyUrl) throw new Error("NTFY_URL environment variable is not set");
 
-  const [emoji, typeLabel] = TYPE_INFO[data.notificationType] ?? ["📩", data.notificationType];
-  const subtypeLabel = data.subtype ? (SUBTYPE_LABELS[data.subtype] ?? data.subtype) : null;
-  const typeDisplay = subtypeLabel ? `${typeLabel} · ${subtypeLabel}` : typeLabel;
+  const [emoji, typeLabel] = TYPE_INFO[data.notificationType] ?? [
+    "📩",
+    data.notificationType,
+  ];
+  const subtypeLabel = data.subtype
+    ? (SUBTYPE_LABELS[data.subtype] ?? data.subtype)
+    : null;
+  const typeDisplay = subtypeLabel
+    ? `${typeLabel} · ${subtypeLabel}`
+    : typeLabel;
   const envSuffix = data.environment === "Sandbox" ? " [Sandbox]" : "";
 
-  const title = `${emoji} ${typeDisplay}${envSuffix}`;
+  // Title header must be ASCII-only; use " - " separator, emoji go in body
+  const asciiTypeDisplay = subtypeLabel
+    ? `${typeLabel} - ${subtypeLabel}`
+    : typeLabel;
+  const title = `${asciiTypeDisplay}${envSuffix}`;
 
   const lines: string[] = [
+    `${emoji} ${typeDisplay}${envSuffix}`,
     `App: ${data.appSlug ?? "—"}`,
     `Amount: ${formatPrice(data.priceMills, data.currency, data.inAppOwnershipType)}`,
     `Product: ${data.productId ?? "—"}`,
@@ -77,18 +91,23 @@ export async function sendNtfyNotification(data: NotificationData): Promise<void
 
   if (data.storefront) lines.push(`Storefront: ${data.storefront}`);
   if (data.transactionReason) lines.push(`Reason: ${data.transactionReason}`);
-  if (data.inAppOwnershipType) lines.push(`Ownership: ${data.inAppOwnershipType}`);
+  if (data.inAppOwnershipType)
+    lines.push(`Ownership: ${data.inAppOwnershipType}`);
   if (data.offerType != null) {
-    const offerLabel = OFFER_TYPE_LABELS[data.offerType] ?? `Type ${data.offerType}`;
-    const offerSuffix = data.offerIdentifier ? ` (${data.offerIdentifier})` : "";
+    const offerLabel =
+      OFFER_TYPE_LABELS[data.offerType] ?? `Type ${data.offerType}`;
+    const offerSuffix = data.offerIdentifier
+      ? ` (${data.offerIdentifier})`
+      : "";
     lines.push(`Offer: ${offerLabel}${offerSuffix}`);
   }
-  if (data.purchaseDate) lines.push(`Purchased: ${formatDate(data.purchaseDate)}`);
+  if (data.purchaseDate)
+    lines.push(`Purchased: ${formatDate(data.purchaseDate)}`);
   if (data.transactionId) lines.push(`Transaction: ${data.transactionId}`);
 
   const headers: Record<string, string> = {
     "Content-Type": "text/plain",
-    "Title": title,
+    Title: title,
   };
 
   const token = process.env.NTFY_TOKEN;

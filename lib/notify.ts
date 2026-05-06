@@ -3,7 +3,9 @@ import { sendNtfyNotification } from "./ntfy.js";
 
 // NOTIFICATION_PROVIDER: "telegram" (default) | "ntfy" | "both"
 export async function sendNotification(data: NotificationData): Promise<void> {
-  const provider = (process.env.NOTIFICATION_PROVIDER ?? "telegram").toLowerCase();
+  const provider = (
+    process.env.NOTIFICATION_PROVIDER ?? "telegram"
+  ).toLowerCase();
 
   const tasks: Promise<void>[] = [];
 
@@ -15,7 +17,9 @@ export async function sendNotification(data: NotificationData): Promise<void> {
   }
 
   if (tasks.length === 0) {
-    console.warn(`[notify] unknown NOTIFICATION_PROVIDER "${provider}", defaulting to telegram`);
+    console.warn(
+      `[notify] unknown NOTIFICATION_PROVIDER "${provider}", defaulting to telegram`,
+    );
     tasks.push(sendTelegramNotification(data));
   }
 

@@ -1,12 +1,12 @@
-# App Store Webhook Telegram
+# App Store Webhook
 
-Receives [App Store Server Notifications v2](https://developer.apple.com/documentation/appstoreservernotifications), verifies JWS signatures using Apple's official library, and forwards events to a Telegram chat.
+Receives [App Store Server Notifications v2](https://developer.apple.com/documentation/appstoreservernotifications), verifies JWS signatures using Apple's official library, and forwards events to Telegram or [ntfy](https://ntfy.sh).
 
 ## How It Works
 
 1. Apple sends a signed POST request to your webhook endpoint after each subscription event
 2. The server verifies the JWS signature using Apple's root certificates
-3. A formatted message is sent to your Telegram chat
+3. A formatted message is sent to Telegram and/or ntfy
 
 ![Screenshot](./screenshot/iOS.webp)
 
@@ -49,19 +49,32 @@ cp .env.example .env.local
 Edit `.env.local`:
 
 ```env
+# Notification provider: "telegram" (default) | "ntfy" | "both"
+NOTIFICATION_PROVIDER=telegram
+
+# Telegram (required if provider is "telegram" or "both")
 TELEGRAM_BOT_TOKEN=123456789:ABCDefghIJKlmnopQRStuvWXyz
 TELEGRAM_CHAT_ID=-1001234567890
+
+# ntfy (required if provider is "ntfy" or "both")
+NTFY_URL=https://ntfy.sh/your-random-topic
+NTFY_TOKEN=                        # optional — only for protected topics
 
 # One line per app: APP_<SLUG>=<bundleId>:<appAppleId>
 APP_IMAGE2WEBP=com.yourcompany.image2webp:1234567890
 APP_MYAPP=com.yourcompany.myapp:9876543210
 ```
 
-| Variable             | Description                                                    |
-| -------------------- | -------------------------------------------------------------- |
-| `TELEGRAM_BOT_TOKEN` | Token from @BotFather                                          |
-| `TELEGRAM_CHAT_ID`   | Your personal ID (positive number) or group/channel (negative) |
-| `APP_<SLUG>`         | `<bundleId>:<appAppleId>` — slug becomes the URL path          |
+| Variable                | Description                                                    |
+| ----------------------- | -------------------------------------------------------------- |
+| `NOTIFICATION_PROVIDER` | `telegram` (default), `ntfy`, or `both`                        |
+| `TELEGRAM_BOT_TOKEN`    | Token from @BotFather                                          |
+| `TELEGRAM_CHAT_ID`      | Your personal ID (positive number) or group/channel (negative) |
+| `NTFY_URL`              | Full ntfy topic URL, e.g. `https://ntfy.sh/my-secret-topic`    |
+| `NTFY_TOKEN`            | Bearer token — only needed for access-controlled topics        |
+| `APP_<SLUG>`            | `<bundleId>:<appAppleId>` — slug becomes the URL path          |
+
+> **ntfy tip:** The topic name acts as a shared secret — anyone who knows it can subscribe. Use a long random string, e.g. `https://ntfy.sh/appstore-k8f2mxq79p`. No account required for public topics.
 
 ### 4. Register Webhook URLs in App Store Connect
 
@@ -101,7 +114,7 @@ Paste the ngrok HTTPS URL into App Store Connect → Sandbox Server URL.
 pnpm run deploy
 ```
 
-Then go to **Vercel Dashboard → Your Project → Settings → Environment Variables** and add `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, and all your `APP_*` variables.
+Then go to **Vercel Dashboard → Your Project → Settings → Environment Variables** and add `NOTIFICATION_PROVIDER`, the relevant provider vars (`TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` / `NTFY_URL` / `NTFY_TOKEN`), and all your `APP_*` variables.
 
 Paste the production Vercel URL into App Store Connect → Production Server URL.
 
