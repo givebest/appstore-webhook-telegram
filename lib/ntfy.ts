@@ -76,10 +76,11 @@ export async function sendNtfyNotification(
   const envSuffix = data.environment === "Sandbox" ? " [Sandbox]" : "";
 
   // Title header must be ASCII-only; use " - " separator, emoji go in body
-  const asciiTypeDisplay = subtypeLabel
-    ? `${typeLabel} - ${subtypeLabel}`
-    : typeLabel;
-  const title = `${asciiTypeDisplay}${envSuffix}`;
+  // const asciiTypeDisplay = subtypeLabel
+  //   ? `${typeLabel} - ${subtypeLabel}`
+  //   : typeLabel;
+  // const title = `${asciiTypeDisplay}${envSuffix}`;
+  const title = `RevBot`;
 
   const lines: string[] = [
     `${emoji} ${typeDisplay}${envSuffix}`,
