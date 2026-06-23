@@ -1,4 +1,5 @@
 import type { NotificationData } from "./telegram.js";
+import { getStorefrontFlag } from "./storefront.js";
 
 const TYPE_INFO: Record<string, [string, string]> = {
   SUBSCRIBED: ["💰", "New Subscription"],
@@ -45,12 +46,14 @@ function formatPrice(
   priceMills: number | null | undefined,
   currency: string | null | undefined,
   inAppOwnershipType?: string | null,
+  storefront?: string | null,
 ): string {
   if (priceMills == null || !currency) return "Unknown";
   if (priceMills === 0 && inAppOwnershipType === "FAMILY_SHARED") {
     return "Family Shared";
   }
-  return `${(priceMills / 1000).toFixed(2)} ${currency}`;
+  const flag = storefront ? getStorefrontFlag(storefront) : "";
+  return `${(priceMills / 1000).toFixed(2)} ${currency} ${flag}`.trim();
 }
 
 function formatDate(ts: number): string {
@@ -70,12 +73,15 @@ export async function sendNtfyNotification(data: NotificationData): Promise<void
 
   const lines: string[] = [
     `App: ${data.appSlug ?? "—"}`,
-    `Amount: ${formatPrice(data.priceMills, data.currency, data.inAppOwnershipType)}`,
+    `Amount: ${formatPrice(data.priceMills, data.currency, data.inAppOwnershipType, data.storefront)}`,
     `Product: ${data.productId ?? "—"}`,
     `Time: ${data.eventDate ? formatDate(data.eventDate) : formatDate(Date.now())}`,
   ];
 
-  if (data.storefront) lines.push(`Storefront: ${data.storefront}`);
+  if (data.storefront) {
+    const flag = getStorefrontFlag(data.storefront);
+    lines.push(`Storefront: ${flag} ${data.storefront}`.trim());
+  }
   if (data.transactionReason) lines.push(`Reason: ${data.transactionReason}`);
   if (data.inAppOwnershipType) lines.push(`Ownership: ${data.inAppOwnershipType}`);
   if (data.offerType != null) {

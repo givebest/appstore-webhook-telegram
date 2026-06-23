@@ -3,6 +3,7 @@
 // string inside the function so that we can validate the token/chat id and
 // provide a useful error rather than letting `fetch` blow up with "fetch
 // failed".
+import { getStorefrontFlag } from "./storefront.js";
 
 // Maps notificationType to [emoji, label]
 const TYPE_INFO: Record<string, [string, string]> = {
@@ -37,62 +38,6 @@ const SUBTYPE_LABELS: Record<string, string> = {
   PRICE_INCREASE: "Price Increase Not Agreed",
   SUMMARY: "Summary",
   FAILURE: "Failure",
-};
-
-// ISO 3166-1 alpha-3 country code to flag emoji mapping
-const STOREFRONT_FLAGS: Record<string, string> = {
-  USA: "🇺🇸",
-  CHN: "🇨🇳",
-  GBR: "🇬🇧",
-  JPN: "🇯🇵",
-  KOR: "🇰🇷",
-  DEU: "🇩🇪",
-  FRA: "🇫🇷",
-  ITA: "🇮🇹",
-  ESP: "🇪🇸",
-  CAN: "🇨🇦",
-  AUS: "🇦🇺",
-  IND: "🇮🇳",
-  BRA: "🇧🇷",
-  MEX: "🇲🇽",
-  RUS: "🇷🇺",
-  TWN: "🇹🇼",
-  HKG: "🇭🇰",
-  SRB: "🇷🇸",
-  NLD: "🇳🇱",
-  SWE: "🇸🇪",
-  NOR: "🇳🇴",
-  DNK: "🇩🇰",
-  FIN: "🇫🇮",
-  POL: "🇵🇱",
-  TUR: "🇹🇷",
-  IDN: "🇮🇩",
-  THA: "🇹🇭",
-  VNM: "🇻🇳",
-  MYS: "🇲🇾",
-  PHL: "🇵🇭",
-  ARE: "🇦🇪",
-  SAU: "🇸🇦",
-  ISR: "🇮🇱",
-  EGY: "🇪🇬",
-  ZAF: "🇿🇦",
-  NGA: "🇳🇬",
-  KEN: "🇰🇪",
-  ARG: "🇦🇷",
-  CHL: "🇨🇱",
-  COL: "🇨🇴",
-  PER: "🇵🇪",
-  UKR: "🇺🇦",
-  ROU: "🇷🇴",
-  CHE: "🇨🇭",
-  AUT: "🇦🇹",
-  BEL: "🇧🇪",
-  PRT: "🇵🇹",
-  GRC: "🇬🇷",
-  CZE: "🇨🇿",
-  HUN: "🇭🇺",
-  NZL: "🇳🇿",
-  SGP: "🇸🇬",
 };
 
 export interface NotificationData {
@@ -134,10 +79,6 @@ function formatPrice(
 
 function formatDate(ts: number): string {
   return new Date(ts).toISOString().replace("T", " ").slice(0, 19) + " UTC";
-}
-
-function getStorefrontFlag(storefront: string): string {
-  return STOREFRONT_FLAGS[storefront] ?? "";
 }
 
 export async function sendTelegramNotification(

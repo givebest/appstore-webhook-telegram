@@ -16,11 +16,6 @@
     "typescript": "^5",
     "vercel": "^50.28.0"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  },
   "author": "Givebest <givenlovs@msn.com>",
   "license": "MIT"
 }
