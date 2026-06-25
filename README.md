@@ -51,6 +51,7 @@ Edit `.env.local`:
 ```env
 TELEGRAM_BOT_TOKEN=123456789:ABCDefghIJKlmnopQRStuvWXyz
 TELEGRAM_CHAT_ID=-1001234567890
+APPLE_ENABLE_ONLINE_CHECKS=
 
 # One line per app: APP_<SLUG>=<bundleId>:<appAppleId>
 APP_IMAGE2WEBP=com.yourcompany.image2webp:1234567890
@@ -61,6 +62,7 @@ APP_MYAPP=com.yourcompany.myapp:9876543210
 | -------------------- | -------------------------------------------------------------- |
 | `TELEGRAM_BOT_TOKEN` | Token from @BotFather                                          |
 | `TELEGRAM_CHAT_ID`   | Your personal ID (positive number) or group/channel (negative) |
+| `APPLE_ENABLE_ONLINE_CHECKS` | Set to `true` to enable Apple's online OCSP certificate checks |
 | `APP_<SLUG>`         | `<bundleId>:<appAppleId>` — slug becomes the URL path          |
 
 ### 4. Register Webhook URLs in App Store Connect

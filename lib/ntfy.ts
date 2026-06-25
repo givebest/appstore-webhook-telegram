@@ -60,6 +60,12 @@ function formatDate(ts: number): string {
   return new Date(ts).toISOString().replace("T", " ").slice(0, 19) + " UTC";
 }
 
+function formatHeaderValue(value: string): string {
+  return value
+    .replace(/\s*·\s*/g, " - ")
+    .replace(/[^\x20-\x7E]/g, "?");
+}
+
 export async function sendNtfyNotification(data: NotificationData): Promise<void> {
   const ntfyUrl = process.env.NTFY_URL;
   if (!ntfyUrl) throw new Error("NTFY_URL environment variable is not set");
@@ -69,9 +75,10 @@ export async function sendNtfyNotification(data: NotificationData): Promise<void
   const typeDisplay = subtypeLabel ? `${typeLabel} · ${subtypeLabel}` : typeLabel;
   const envSuffix = data.environment === "Sandbox" ? " [Sandbox]" : "";
 
-  const title = `${emoji} ${typeDisplay}${envSuffix}`;
+  const title = formatHeaderValue(`${typeDisplay}${envSuffix}`);
 
   const lines: string[] = [
+    `${emoji} ${typeDisplay}${envSuffix}`,
     `App: ${data.appSlug ?? "—"}`,
     `Amount: ${formatPrice(data.priceMills, data.currency, data.inAppOwnershipType, data.storefront)}`,
     `Product: ${data.productId ?? "—"}`,
