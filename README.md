@@ -55,6 +55,7 @@ NOTIFICATION_PROVIDER=telegram
 # Telegram (required if provider is "telegram" or "both")
 TELEGRAM_BOT_TOKEN=123456789:ABCDefghIJKlmnopQRStuvWXyz
 TELEGRAM_CHAT_ID=-1001234567890
+APPLE_ENABLE_ONLINE_CHECKS=
 
 # ntfy (required if provider is "ntfy" or "both")
 NTFY_URL=https://ntfy.sh/your-random-topic
@@ -70,6 +71,7 @@ APP_MYAPP=com.yourcompany.myapp:9876543210
 | `NOTIFICATION_PROVIDER` | `telegram` (default), `ntfy`, or `both`                        |
 | `TELEGRAM_BOT_TOKEN`    | Token from @BotFather                                          |
 | `TELEGRAM_CHAT_ID`      | Your personal ID (positive number) or group/channel (negative) |
+| `APPLE_ENABLE_ONLINE_CHECKS` | `true` enables Apple's online OCSP revocation checks; empty/false skips them |
 | `NTFY_URL`              | Full ntfy topic URL, e.g. `https://ntfy.sh/my-secret-topic`    |
 | `NTFY_TOKEN`            | Bearer token — only needed for access-controlled topics        |
 | `APP_<SLUG>`            | `<bundleId>:<appAppleId>` — slug becomes the URL path          |
