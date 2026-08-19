@@ -1,6 +1,6 @@
 export interface AppConfig {
   bundleId: string;
-  appAppleId: number | undefined;
+  appAppleId: number;
 }
 
 // Reads all APP_* environment variables and builds the APPS map.
@@ -12,11 +12,27 @@ function loadApps(): Record<string, AppConfig> {
   for (const [key, value] of Object.entries(process.env)) {
     if (!key.startsWith("APP_") || !value) continue;
     const slug = key.slice(4).toLowerCase();
-    const [bundleId, appleIdStr] = value.split(":");
-    if (!bundleId) continue;
+    const [bundleIdRaw, appleIdRaw, ...extraParts] = value.split(":");
+    const bundleId = bundleIdRaw?.trim();
+    const appleIdStr = appleIdRaw?.trim();
+    const appAppleId = appleIdStr ? Number(appleIdStr) : NaN;
+
+    if (
+      !slug ||
+      !bundleId ||
+      extraParts.length > 0 ||
+      !Number.isSafeInteger(appAppleId) ||
+      appAppleId <= 0
+    ) {
+      console.error(
+        `[apps] ignoring invalid ${key}; expected <bundleId>:<positive appAppleId>`,
+      );
+      continue;
+    }
+
     apps[slug] = {
       bundleId,
-      appAppleId: appleIdStr ? parseInt(appleIdStr, 10) : undefined,
+      appAppleId,
     };
   }
   return apps;

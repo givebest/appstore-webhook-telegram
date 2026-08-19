@@ -18,23 +18,26 @@ function loadRootCAs(): Buffer[] {
 
 const rootCAs = loadRootCAs();
 
+const enableOnlineChecks = process.env.APPLE_ENABLE_ONLINE_CHECKS === "true";
+
 function createVerifiers(config: AppConfig): {
   sandbox: SignedDataVerifier;
   production: SignedDataVerifier;
 } {
   return {
-    sandbox: new SignedDataVerifier(rootCAs, true, Environment.SANDBOX, config.bundleId, undefined),
-    production: new SignedDataVerifier(rootCAs, true, Environment.PRODUCTION, config.bundleId, config.appAppleId),
+    sandbox: new SignedDataVerifier(rootCAs, enableOnlineChecks, Environment.SANDBOX, config.bundleId, undefined),
+    production: new SignedDataVerifier(rootCAs, enableOnlineChecks, Environment.PRODUCTION, config.bundleId, config.appAppleId),
   };
 }
 
 const verifierCache = new Map<string, { sandbox: SignedDataVerifier; production: SignedDataVerifier }>();
 
 function getVerifiers(config: AppConfig) {
-  if (!verifierCache.has(config.bundleId)) {
-    verifierCache.set(config.bundleId, createVerifiers(config));
+  const cacheKey = `${config.bundleId}:${config.appAppleId}`;
+  if (!verifierCache.has(cacheKey)) {
+    verifierCache.set(cacheKey, createVerifiers(config));
   }
-  return verifierCache.get(config.bundleId)!;
+  return verifierCache.get(cacheKey)!;
 }
 
 async function getVerifierForPayload(
@@ -68,6 +71,7 @@ export async function verifyAndDecodeNotification(
       );
     } catch (err) {
       console.error("[verifier] failed to decode signedTransactionInfo:", err);
+      throw new Error("Unable to verify signedTransactionInfo");
     }
   }
 

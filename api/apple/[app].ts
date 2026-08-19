@@ -1,16 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { APPS } from "../../lib/apps.js";
+import {
+  claimNotification,
+  completeNotification,
+  makeNotificationKey,
+  releaseNotification,
+} from "../../lib/idempotency.js";
 import { verifyAndDecodeNotification } from "../../lib/verifier.js";
-import { sendTelegramNotification } from "../../lib/telegram.js";
-
-function stringifyForLog(value: unknown): string {
-  if (typeof value === "string") return value;
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return String(value);
-  }
-}
+import { sendNotification } from "../../lib/notify.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const appSlug = req.query.app as string;
@@ -21,10 +18,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(404).json({ error: "Unknown app" });
   }
 
-  console.log(
-    `[apple:${appSlug}] incoming request:`,
-    stringifyForLog({ method: req.method, url: req.url, body: req.body }),
-  );
+  console.log(`[apple:${appSlug}] incoming request`, {
+    method: req.method,
+    hasBody: req.body != null,
+  });
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
@@ -37,8 +34,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: false });
   }
 
-  console.log("appConfig", appConfig);
-
   let result: Awaited<ReturnType<typeof verifyAndDecodeNotification>>;
   try {
     result = await verifyAndDecodeNotification(signedPayload, appConfig);
@@ -50,16 +45,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { notification, transactionInfo } = result;
   const { notificationType, subtype, data } = notification;
   const environment = data?.environment ?? "Unknown";
+  const notificationKey = makeNotificationKey(
+    appSlug,
+    notification.notificationUUID,
+    signedPayload,
+  );
+  const claim = claimNotification(notificationKey);
+
+  if (claim === "completed") {
+    console.log(`[apple:${appSlug}] duplicate notification ignored`, {
+      notificationUUID: notification.notificationUUID ?? null,
+    });
+    return res.status(200).json({ ok: true, duplicate: true });
+  }
+
+  if (claim === "in-progress") {
+    console.warn(`[apple:${appSlug}] notification is already being processed`, {
+      notificationUUID: notification.notificationUUID ?? null,
+    });
+    return res.status(503).json({ ok: false, retry: true });
+  }
 
   console.log(
     `[apple:${appSlug}] notification:`,
     notificationType,
     subtype,
     environment,
+    notification.notificationUUID ?? null,
   );
 
   try {
-    await sendTelegramNotification({
+    await sendNotification({
       appSlug,
       notificationType: notificationType ?? "UNKNOWN",
       subtype: subtype ?? null,
@@ -68,9 +84,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       currency: transactionInfo?.currency ?? null,
       environment: String(environment),
       transactionId: transactionInfo?.transactionId ?? null,
+      storefront: transactionInfo?.storefront ?? null,
+      eventDate: notification.signedDate ?? null,
+      purchaseDate: transactionInfo?.purchaseDate ?? null,
+      offerType: transactionInfo?.offerType != null ? Number(transactionInfo.offerType) : null,
+      offerIdentifier: transactionInfo?.offerIdentifier ?? null,
+      transactionReason: transactionInfo?.transactionReason != null ? String(transactionInfo.transactionReason) : null,
+      inAppOwnershipType: transactionInfo?.inAppOwnershipType != null ? String(transactionInfo.inAppOwnershipType) : null,
     });
+    completeNotification(notificationKey);
   } catch (err) {
-    console.error(`[telegram:${appSlug}] notification failed:`, err);
+    console.error(`[notify:${appSlug}] notification failed:`, err);
+    releaseNotification(notificationKey);
+    return res.status(503).json({ ok: false, retry: true });
   }
 
   return res.status(200).json({ ok: true });
