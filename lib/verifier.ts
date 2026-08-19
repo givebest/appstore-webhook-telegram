@@ -33,10 +33,11 @@ function createVerifiers(config: AppConfig): {
 const verifierCache = new Map<string, { sandbox: SignedDataVerifier; production: SignedDataVerifier }>();
 
 function getVerifiers(config: AppConfig) {
-  if (!verifierCache.has(config.bundleId)) {
-    verifierCache.set(config.bundleId, createVerifiers(config));
+  const cacheKey = `${config.bundleId}:${config.appAppleId}`;
+  if (!verifierCache.has(cacheKey)) {
+    verifierCache.set(cacheKey, createVerifiers(config));
   }
-  return verifierCache.get(config.bundleId)!;
+  return verifierCache.get(cacheKey)!;
 }
 
 async function getVerifierForPayload(
@@ -70,6 +71,7 @@ export async function verifyAndDecodeNotification(
       );
     } catch (err) {
       console.error("[verifier] failed to decode signedTransactionInfo:", err);
+      throw new Error("Unable to verify signedTransactionInfo");
     }
   }
 

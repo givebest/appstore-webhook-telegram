@@ -1,12 +1,12 @@
-# App Store Webhook Telegram
+# App Store Webhook
 
-Receives [App Store Server Notifications v2](https://developer.apple.com/documentation/appstoreservernotifications), verifies JWS signatures using Apple's official library, and forwards events to a Telegram chat.
+Receives [App Store Server Notifications v2](https://developer.apple.com/documentation/appstoreservernotifications), verifies JWS signatures using Apple's official library, and forwards events to Telegram and/or ntfy.
 
 ## How It Works
 
 1. Apple sends a signed POST request to your webhook endpoint after each subscription event
 2. The server verifies the JWS signature using Apple's root certificates
-3. A formatted message is sent to your Telegram chat
+3. A formatted message is sent to the configured notification provider(s)
 
 ![Screenshot](./screenshot/iOS.webp)
 
@@ -49,6 +49,14 @@ cp .env.example .env.local
 Edit `.env.local`:
 
 ```env
+# Notification provider: "telegram" (default) | "ntfy" | "both"
+NOTIFICATION_PROVIDER=telegram
+
+# ntfy (required if provider is "ntfy" or "both")
+NTFY_URL=https://ntfy.sh/your-random-topic
+NTFY_TOKEN=                        # optional — only for protected topics
+
+# Telegram (required if provider is "telegram" or "both")
 TELEGRAM_BOT_TOKEN=123456789:ABCDefghIJKlmnopQRStuvWXyz
 TELEGRAM_CHAT_ID=-1001234567890
 APPLE_ENABLE_ONLINE_CHECKS=
@@ -58,12 +66,15 @@ APP_IMAGE2WEBP=com.yourcompany.image2webp:1234567890
 APP_MYAPP=com.yourcompany.myapp:9876543210
 ```
 
-| Variable             | Description                                                    |
-| -------------------- | -------------------------------------------------------------- |
-| `TELEGRAM_BOT_TOKEN` | Token from @BotFather                                          |
-| `TELEGRAM_CHAT_ID`   | Your personal ID (positive number) or group/channel (negative) |
+| Variable | Description |
+| --- | --- |
+| `NOTIFICATION_PROVIDER` | `telegram`, `ntfy`, or `both` |
+| `NTFY_URL` | Full ntfy topic URL |
+| `NTFY_TOKEN` | Optional bearer token for protected ntfy topics |
+| `TELEGRAM_BOT_TOKEN` | Token from @BotFather |
+| `TELEGRAM_CHAT_ID` | Personal, group, or channel chat ID |
 | `APPLE_ENABLE_ONLINE_CHECKS` | Set to `true` to enable Apple's online OCSP certificate checks |
-| `APP_<SLUG>`         | `<bundleId>:<appAppleId>` — slug becomes the URL path          |
+| `APP_<SLUG>` | `<bundleId>:<appAppleId>` — slug becomes the URL path |
 
 ### 4. Register Webhook URLs in App Store Connect
 
@@ -103,7 +114,7 @@ Paste the ngrok HTTPS URL into App Store Connect → Sandbox Server URL.
 pnpm run deploy
 ```
 
-Then go to **Vercel Dashboard → Your Project → Settings → Environment Variables** and add `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, and all your `APP_*` variables.
+Then go to **Vercel Dashboard → Your Project → Settings → Environment Variables** and add the relevant provider variables and all your `APP_*` variables.
 
 Paste the production Vercel URL into App Store Connect → Production Server URL.
 
@@ -183,7 +194,9 @@ Then add the Vercel environment variable in the dashboard and redeploy.
 POST /api/apple/:app
 ```
 
-Always returns `200 OK` to Apple (even on verification failure) to prevent retries.
+Invalid or unverifiable payloads return `200 OK` to avoid retrying malformed requests. Provider delivery failures return `503`, allowing Apple to retry the notification.
+
+The handler keeps a short-lived in-memory idempotency guard using `notificationUUID`. This covers duplicate requests handled by the same warm instance; use a shared KV/Redis store if cross-instance deduplication is required.
 
 ## Sponsored By
 
