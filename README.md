@@ -1,6 +1,6 @@
 # App Store Webhook
 
-Receives [App Store Server Notifications v2](https://developer.apple.com/documentation/appstoreservernotifications), verifies JWS signatures using Apple's official library, and forwards events to Telegram and/or ntfy.
+Receives [App Store Server Notifications v2](https://developer.apple.com/documentation/appstoreservernotifications), verifies JWS signatures using Apple's official library, and forwards events to Telegram, ntfy, and/or email (via [Resend](https://resend.com)).
 
 ## How It Works
 
@@ -49,12 +49,18 @@ cp .env.example .env.local
 Edit `.env.local`:
 
 ```env
-# Notification provider: "telegram" (default) | "ntfy" | "both"
-NOTIFICATION_PROVIDER=telegram
+# Notification provider(s), comma-separated: "telegram" (default) | "ntfy" | "email"
+# Aliases: "both" = telegram,ntfy; "all" = telegram,ntfy,email
+NOTIFICATION_PROVIDER=telegram,email
 
 # ntfy (required if provider is "ntfy" or "both")
 NTFY_URL=https://ntfy.sh/your-random-topic
 NTFY_TOKEN=                        # optional — only for protected topics
+
+# Email via Resend (required if provider includes "email")
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxx
+EMAIL_FROM=                                      # optional — defaults to onboarding@resend.dev
+EMAIL_TO=you@example.com                         # comma-separated for multiple
 
 # Telegram (required if provider is "telegram" or "both")
 TELEGRAM_BOT_TOKEN=123456789:ABCDefghIJKlmnopQRStuvWXyz
@@ -68,7 +74,10 @@ APP_MYAPP=com.yourcompany.myapp:9876543210
 
 | Variable | Description |
 | --- | --- |
-| `NOTIFICATION_PROVIDER` | `telegram`, `ntfy`, or `both` |
+| `NOTIFICATION_PROVIDER` | Comma-separated: `telegram`, `ntfy`, `email` (aliases `both`, `all`) |
+| `RESEND_API_KEY` | Resend API key (email provider) |
+| `EMAIL_FROM` | Optional sender. Defaults to `onboarding@resend.dev` (delivers only to your Resend account email); set an address on a Resend-verified domain to send to others |
+| `EMAIL_TO` | Recipient address(es), comma-separated |
 | `NTFY_URL` | Full ntfy topic URL |
 | `NTFY_TOKEN` | Optional bearer token for protected ntfy topics |
 | `TELEGRAM_BOT_TOKEN` | Token from @BotFather |
