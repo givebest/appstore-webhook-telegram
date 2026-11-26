@@ -14,7 +14,7 @@ import { fetchWithTimeout, responseError } from "./http.js";
 import { getStorefrontFlag } from "./storefront.js";
 
 export interface NotificationData {
-  // slug from the request URL ("image2webp" etc.) so callers can label the
+  // slug from the request URL ("myapp" etc.) so callers can label the
   // message, or leave undefined if the caller doesn't know it.
   appSlug?: string;
 
@@ -55,6 +55,7 @@ export async function sendTelegramNotification(
   const { emoji, typeDisplay } = getNotificationTypeDisplay(
     data.notificationType,
     data.subtype,
+    data.inAppOwnershipType,
   );
   const envBadge = data.environment === "Sandbox" ? " `[Sandbox]`" : "";
 

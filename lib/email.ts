@@ -42,6 +42,7 @@ export async function sendEmailNotification(data: NotificationData): Promise<voi
   const { emoji, typeDisplay } = getNotificationTypeDisplay(
     data.notificationType,
     data.subtype,
+    data.inAppOwnershipType,
   );
   const envSuffix = data.environment === "Sandbox" ? " [Sandbox]" : "";
   const amount = formatPrice(
@@ -74,7 +75,10 @@ export async function sendEmailNotification(data: NotificationData): Promise<voi
   if (data.transactionId) rows.push(["Transaction", data.transactionId]);
 
   const heading = `${emoji} ${typeDisplay}${envSuffix}`;
-  const subject = `${heading} · ${data.appSlug ?? "App Store"} · ${amount}`;
+  const subject =
+    amount === typeDisplay
+      ? `${heading} · ${data.appSlug ?? "App Store"}`
+      : `${heading} · ${data.appSlug ?? "App Store"} · ${amount}`;
 
   const text = [heading, "", ...rows.map(([key, value]) => `${key}: ${value}`)].join("\n");
 

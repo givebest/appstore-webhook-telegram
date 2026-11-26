@@ -43,10 +43,33 @@ export const OFFER_TYPE_LABELS: Record<number, string> = {
   4: "Win-Back Offer",
 };
 
+const FAMILY_SHARED_REVENUE_TYPES = new Set([
+  "SUBSCRIBED",
+  "DID_RENEW",
+  "ONE_TIME_CHARGE",
+]);
+
+export const FAMILY_SHARED_LABEL = "Family Shared · No New Revenue";
+
+export function isFamilyShared(inAppOwnershipType?: string | null): boolean {
+  return inAppOwnershipType === "FAMILY_SHARED";
+}
+
 export function getNotificationTypeDisplay(
   notificationType: string,
   subtype?: string | null,
+  inAppOwnershipType?: string | null,
 ): { emoji: string; typeDisplay: string } {
+  if (
+    isFamilyShared(inAppOwnershipType) &&
+    FAMILY_SHARED_REVENUE_TYPES.has(notificationType)
+  ) {
+    return {
+      emoji: "👨‍👩‍👧",
+      typeDisplay: FAMILY_SHARED_LABEL,
+    };
+  }
+
   const [emoji, typeLabel] = TYPE_INFO[notificationType] ?? [
     "📩",
     notificationType,
@@ -67,10 +90,10 @@ export function formatPrice(
   inAppOwnershipType?: string | null,
   storefront?: string | null,
 ): string {
-  if (priceMills == null || !currency) return "Unknown";
-  if (priceMills === 0 && inAppOwnershipType === "FAMILY_SHARED") {
-    return "Family Shared";
+  if (isFamilyShared(inAppOwnershipType)) {
+    return FAMILY_SHARED_LABEL;
   }
+  if (priceMills == null || !currency) return "Unknown";
 
   const amount = (priceMills / 1000).toFixed(2);
   const flag = storefront ? getStorefrontFlag(storefront) : "";

@@ -21,6 +21,7 @@ export async function sendNtfyNotification(data: NotificationData): Promise<void
   const { emoji, typeDisplay } = getNotificationTypeDisplay(
     data.notificationType,
     data.subtype,
+    data.inAppOwnershipType,
   );
   const envSuffix = data.environment === "Sandbox" ? " [Sandbox]" : "";
 

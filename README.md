@@ -68,8 +68,8 @@ TELEGRAM_CHAT_ID=-1001234567890
 APPLE_ENABLE_ONLINE_CHECKS=
 
 # One line per app: APP_<SLUG>=<bundleId>:<appAppleId>
-APP_IMAGE2WEBP=com.yourcompany.image2webp:1234567890
-APP_MYAPP=com.yourcompany.myapp:9876543210
+APP_MYAPP=com.yourcompany.myapp:1234567890
+APP_OTHERAPP=com.yourcompany.otherapp:9876543210
 ```
 
 | Variable | Description |
@@ -92,7 +92,7 @@ Go to **App Store Connect → Your App → App Information → App Store Server 
 - **Sandbox URL** — your ngrok/tunnel URL (for testing)
 - **Production URL** — your deployed Vercel URL
 
-Both should point to `POST /api/apple/<app-slug>`, e.g. `/api/apple/image2webp`.
+Both should point to `POST /api/apple/<app-slug>`, e.g. `/api/apple/myapp`.
 
 ## Local Development
 
@@ -206,10 +206,6 @@ POST /api/apple/:app
 Invalid or unverifiable payloads return `200 OK` to avoid retrying malformed requests. Provider delivery failures return `503`, allowing Apple to retry the notification.
 
 The handler keeps a short-lived in-memory idempotency guard using `notificationUUID`. This covers duplicate requests handled by the same warm instance; use a shared KV/Redis store if cross-instance deduplication is required.
-
-## Sponsored By
-
-This project is built and maintained to support [Image2WebP](https://apps.apple.com/app/id6670599252) — convert images to WebP/AVIF format quickly and securely, reducing file size by up to 80%.
 
 ## License
 
